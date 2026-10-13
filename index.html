@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inglish</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎓%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#f6f4ef;--c:#fff;--t:#1d1d1b;--m:#6b6a65;--a:#1f6f5c;--b:#e2dfd6}
+@media(prefers-color-scheme:dark){:root{--bg:#171716;--c:#222220;--t:#f0eee8;--m:#9a988f;--a:#4fc3a1;--b:#37352f}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:16px/1.5 system-ui,sans-serif;padding:12px}
+.box{max-width:720px;margin:0 auto}.card{background:var(--c);border:1px solid var(--b);border-radius:12px;padding:14px;margin:0 0 12px}
+h1{font-size:20px;margin:0 0 8px}h2{font-size:16px;margin:0 0 8px}
+input,select,textarea,button{font:inherit;color:var(--t);background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:8px;max-width:100%}
+textarea{width:100%;min-height:110px}button{background:var(--a);color:#fff;border:0;cursor:pointer}button.g{background:var(--bg);color:var(--t);border:1px solid var(--b)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0}.m{color:var(--m);font-size:14px}
+#txt{white-space:pre-wrap;line-height:1.8;user-select:text}#bar{position:sticky;top:0;z-index:5}
+#out{white-space:pre-wrap;margin-top:8px}.ok{color:var(--a);font-weight:600}.bad{color:#c0392b;font-weight:600}
+li{margin:4px 0}.tabs button{background:var(--bg);color:var(--t);border:1px solid var(--b)}.tabs button.on{background:var(--a);color:#fff}
+:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+</style></head><body><div class="box" id="app"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
+<script>
+const SU="https://mstfaadlhwzrhxmeeqjv.supabase.co",SK="sb_publishable_XT8x1u3HSjM0W043uanGEQ_GeTQfLnC";
+const GM="gemini-flash-latest";
+const KH="c6be1f52d17f3df2289fb8cb5bdbaa5ec654065eb079174f7b72a8d71b3adb64";
+const METHODS={
+kgb:{n:"Школа разведчика (реконструкция по открытым источникам)",s:["Артикуляция: звуки, которых нет в русском (th, w, r, ɪ/iː)","Ядро 300 самых частых слов + фразы-«пароли»","Легенда: биография на английском (имя, семья, работа, город)","Шэдоуинг: повтор вслух за диктором 20 мин/день","Диктовка на слух: запись без подглядывания","Бытовые диалоги: магазин, такси, отель, звонок","Акцент: ритм, ударение, редукция гласных","Чтение новостей: выделить 20 слов, пересказать","Импровизация по легенде: 5 мин без пауз","Допрос: ответы на неожиданные вопросы","Идиомы и сленг выбранного диалекта","Финальный экзамен: 10 мин разговора без шпаргалок"]},
+comm:{n:"Коммуникативная (разговорная)",s:["Приветствия и знакомство","Я и моя семья","Еда и заказ в кафе","Транспорт и направления","Покупки и цены","Прошедшее время в рассказах","Планы и будущее","Работа и хобби","Здоровье и врач","Путешествия","Мнения и аргументы","Свободный диалог 15 мин"]},
+sr:{n:"Интервальное повторение (карточки)",s:["Алфавит и чтение","100 слов: карточки","Глаголы-основа (50)","Существительные быта (100)","Прилагательные (60)","Фразовые глаголы (30)","Предлоги и артикли","Время: Present","Время: Past","Время: Future","Повтор всех карточек","Тест на 500 слов"]},
+imm:{n:"Погружение (фильмы и подкасты)",s:["Подкаст A1, 15 мин/день","Субтитры EN: сериал 1 серия","Выписать 10 слов из серии","Повтор серии без субтитров","Подкаст A2","Пересказ серии вслух","Новостной ролик + конспект","Подкаст B1","Диалог с партнёром по теме серии","Видео-блог: свой 2-мин рассказ","Подкаст B1+","Смотрим фильм без субтитров"]},
+schl:{n:"Шлиман: вслух, пересказ, сочинения",s:["Выбрать один короткий текст и читать вслух 30 мин","Выписать 15 слов и выучить с примерами","Пересказать текст своими словами вслух","Написать сочинение на тему текста (10 предложений)","Исправить сочинение по образцу (или у подруги)","Выучить исправленный вариант наизусть","Новый текст: читать вслух, пересказывать","Сочинение на свободную тему, 15 предложений","Пересказ без подглядывания, запись голоса","Сравнить запись с оригиналом, исправить ошибки"]},
+lomb:{n:"Като Ломб: параллельное чтение",s:["Взять книгу с параллельным переводом (EN/RU)","Читать 30 мин в день, сверяя абзацы","Не выписывать слова: угадывать по контексту","Читать 1 час, возвращаться только к непонятному","Перечитать главу без перевода","Читать оригинал с лёгким детективом","Пересказать главу партнёру","Отдельно разобрать 10 частых конструкций","Читать без перевода, 1 час","Первая книга целиком без перевода"]},
+arg:{n:"Аргуэльес: шэдоуинг (тень)",s:["Выбрать аудио с текстом, 2 мин","Слушать с текстом 3 раза","Идти и повторять вслух за диктором с отставанием в 1 слово","Шэдоуинг 20 мин в день, текст перед глазами","Шэдоуинг без текста","Записать себя и сравнить с диктором","Новый отрывок: 5 мин, копируем интонацию","Повтор в ходьбе: 30 мин","Шэдоуинг двух разных акцентов","Шэдоуинг подкаста 10 мин без пауз"]},
+lew:{n:"Бенни Льюис: говорить с первого дня",s:["Выучить 10 фраз «выживания» и произнести вслух","Первый разговор с подругой 10 мин","Составить 50 нужных слов под ваши темы","Урок с носителем или чат: 15 мин","Мини-цели недели: 3 темы разговора","Разговор 20 мин, ошибки записываем","Сформулировать 10 вопросов на любую тему","Разговорный вечер: только английский","Рассказать историю дня за 3 мин","Разговор 30 мин без русского"]},
+lamp:{n:"Луки Лампариелло: двусторонний перевод",s:["Выбрать аудио с текстом, 1 страница","Слушать и читать текст, пока понятно","Перевести на русский письменно","Через 2 дня перевести обратно на английский по своему переводу","Сравнить с оригиналом, выписать отличия","Слушать аудио без текста","Шэдоуинг этого же отрывка","Новая страница: тот же цикл","Свободный пересказ в голосе","Диалог по теме текстов"]},
+lq:{n:"Стив Кауфман (LingQ): много понятного материала",s:["Выбрать 5 тем: еда, дом, семья, работа, путешествия","Слушать и читать по 30 мин в день","Сохранять 10 новых слов в день","Читать и слушать один и тот же текст 3 раза","Повтор слов из сохранённых","Увеличить материал до 1 часа","Первое самостоятельное письмо на 5 предложений","Диалог 15 мин","Слушать без текста и пересказывать","Читать книгу уровня B1"]},
+pet:{n:"Дмитрий Петров: 16 уроков",s:["Урок 1: ритм и базовые конструкции","Урок 2: местоимения и глагол to be","Урок 3: вопросы и отрицание","Урок 4: артикль и предлоги","Урок 5: Present Simple и Continuous","Урок 6: Past Simple","Урок 7: Future","Урок 8: модальные глаголы","Урок 9: сравнения и порядок слов","Урок 10: диалог по заготовленным фразам","Урок 11: чтение текста с переводом","Урок 12: итоговый разговор"]},
+fer:{n:"Тим Ферриз: деконструкция 20%",s:["Составить список 100 самых частых слов","Разобрать 3 базовые конструкции предложений","Выучить 2 образца для каждой конструкции","Составить свой текст из изученного","Разговор на 5 мин только по списку","Добавить следующие 100 слов","Новые конструкции: вопросы и отрицания","Рассказ о себе на 2 минуты","Разговор на 10 мин","Проверка: понять простое видео без субтитров"]}};
+
+const DESC={kgb:"Реконструкция по открытым описаниям подготовки разведчиков: сначала артикуляция и слух, затем «легенда» — выученная биография, потом шэдоуинг, диктовка и импровизация под давлением. Цель — говорить автоматически, без перевода в голове. Нагрузка высокая: 1–2 часа в день.",comm:"Язык через общение: каждая тема — готовые ситуации (кафе, транспорт, врач). Грамматика вводится по мере нужды. Подходит, если цель — свободно говорить; партнёр по практике — вы друг для друга.",sr:"Слова и фразы на карточках с повторением через растущие интервалы (1, 3, 7, 14 дней). Быстро строит словарь; лучше сочетать с чтением и речью.",imm:"Много живого английского: подкасты, сериалы, видео. Слух и интонация настраиваются сами. Работает при 30–60 минутах в день; сначала с английскими субтитрами.",schl:"Метод Генриха Шлимана: читать вслух, пересказывать, писать сочинения на любые темы, исправлять и заучивать исправленный вариант. Развивает письмо и память.",lomb:"Като Ломб, венгерская переводчица, читала книги с параллельным переводом и угадывала слова по контексту. Идёт от чтения; даёт словарный запас и чувство языка.",arg:"Александр Аргуэльес: шэдоуинг — повторять вслух за диктором с отставанием в долю секунды, лучше на ходу. Лучший способ перенять ритм, интонацию и акцент.",lew:"Бенни Льюис: говорить с первого дня, даже с ошибками, ставить краткосрочные цели и много разговаривать. Быстро снимает страх речи.",lamp:"Луки Лампариелло: перевод текста на родной, через пару дней обратно на английский и сверка с оригиналом. Выявляет пробелы и учит точной фразе.",lq:"Стив Кауфман: огромное количество интересного понятного материала, слушаем и читаем, слова копятся сами. Упор на удовольствие и объём.",pet:"Дмитрий Петров: быстрый старт за 16 уроков — базовые конструкции, ритм языка, сразу диалоги. Даёт каркас, который потом наполняется практикой.",fer:"Тим Ферриз: разобрать язык на часто используемые 20% слов и конструкций, учить образцы и сразу применять. Быстрый базовый результат."};
+const THEMES=[["Авто"],["Светлая","#f6f4ef","#fff","#1d1d1b","#6b6a65","#1f6f5c","#e2dfd6"],["Тёмная","#171716","#222220","#f0eee8","#9a988f","#4fc3a1","#37352f"],["Океан","#e6f2f8","#ffffff","#10333f","#52707c","#0b7aa6","#c5dde8"],["Лес","#e8f0e6","#f8fbf6","#1c2e1f","#5b6e5d","#2e7d32","#cfdccb"],["Закат","#fdeee3","#fff8f2","#3b2118","#8a6556","#e0572a","#f0cdb8"],["Лаванда","#efeafb","#faf8ff","#2a2145","#74698f","#7b4fd6","#d8cff0"],["Сакура","#fdebf1","#fff7fa","#46222f","#92606f","#d6457a","#f2cbd8"],["Кофе","#efe6dc","#f9f3ec","#33241b","#7a6657","#8b5a2b","#d9c8b5"],["Графит","#26282c","#303338","#e8eaed","#9aa0a8","#8ab4f8","#43474d"],["Мята","#e3f6f0","#f5fffb","#143a31","#4f7a6e","#12a37f","#bfe6da"],["Неон","#0d0d1a","#161628","#eaf6ff","#8fa3c0","#00a8bd","#2a2a4a"],["Песок","#f4ecd8","#fbf6e8","#3a3220","#857a5e","#b8860b","#e0d4b0"],["Ночной синий","#0f1b33","#17274a","#e8eefc","#93a5c9","#3d7fe0","#2a3d68"],["Бордо","#2a1218","#3a1b24","#fbe9ee","#c49aa6","#d44a69","#55303b"],["Изумруд","#0e2a22","#153a2f","#e6faf2","#8fc4b2","#12a379","#235a49"],["Золото","#1d1a10","#2a2616","#f8f0cf","#b9ad7a","#b8921a","#4a4325"]];
+const EM=["🎸","🦊","🐼","🐱","🐶","🦁","🐯","🐨","🦄","🐙","🌸","🌟","🚀","🎧","🔥","🌈"];
+const sb=supabase.createClient(SU,SK);
+const $=s=>document.querySelector(s);
+let U="",ME=null,D={},tm;
+const TTS="speechSynthesis" in window;
+const enc=s=>[...new TextEncoder().encode(s.trim().toLowerCase())].map(b=>b.toString(16).padStart(2,"0")).join("");
+const mail=n=>"u"+enc(n)+"@englishduo.app";
+const isL=()=>/^лера$/i.test(U);
+const hash=async s=>[...new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pok=p=>/^[0-9a-f-]{36}\/[\w.]+$/.test(p||"");
+const pub=p=>sb.storage.from("media").getPublicUrl(p).data.publicUrl;
+const today=()=>new Date().toISOString().slice(0,10);
+const addD=n=>{const t=new Date();t.setDate(t.getDate()+n);return t.toISOString().slice(0,10)};
+const INT=[1,3,7,14,30];
+const ACC=[["en-US","Америка"],["en-GB","Британия"],["en-AU","Австралия"],["en-IN","Индия"],["en-CA","Канада"],["en-IE","Ирландия"],["en-ZA","ЮАР"]];
+const TABS=[["t1","Текст"],["t2","План"],["t3","Словарь"],["t4","Мои слова"],["t7","Карточки"],["t5","Партнёр"],["t6","Профиль"],["t8","Связи"]];
+
+function sv(){clearTimeout(tm);tm=setTimeout(async()=>{if(!ME)return;const{error}=await sb.from("profiles").update({data:D}).eq("id",ME.id);if(error)console.error(error)},500)}
+async function up(f){const ext=(f.name.split(".").pop()||"bin").replace(/[^a-z0-9]/gi,"").slice(0,5)||"bin";const p=ME.id+"/"+Date.now()+"_"+Math.random().toString(36).slice(2,8)+"."+ext;const{error}=await sb.storage.from("media").upload(p,f,{contentType:f.type});if(error)throw error;return p}
+async function ai(prompt,json){if(!D.k)throw new Error("Вставьте ключ Gemini во вкладке «Профиль»");
+const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+GM+":generateContent",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":D.k},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:json?{responseMimeType:"application/json"}:{}})});
+const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message)||r.status);
+const t=((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text).join("");return json?JSON.parse(t):t}
+
+let voices=[];if(TTS){const lv=()=>{voices=speechSynthesis.getVoices()};lv();speechSynthesis.onvoiceschanged=lv}
+function say(s){if(!TTS)return false;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(s);u.lang=D.acc||"en-US";const v=voices.find(x=>x.lang.replace("_","-")===u.lang);if(v)u.voice=v;u.rate=.9;speechSynthesis.speak(u);return true}
+let PSEL="";document.addEventListener("selectionchange",()=>{const s=getSelection().toString().trim();if(s){PSEL=s;const g=$("#gt");if(g)g.href="https://translate.google.com/?sl=en&tl=ru&op=translate&text="+encodeURIComponent(s)}});
+
+function av(d,s){const a=(d&&d.av)||{};return pok(a.p)?`<img src="${esc(pub(a.p))}" width="${s}" height="${s}" style="border-radius:50%;object-fit:cover" alt="">`:`<span style="font-size:${Math.round(s*.8)}px;line-height:1">${esc(a.e||"🙂")}</span>`}
+function applyTheme(d){const r=document.documentElement.style,t=THEMES[(d&&d.th)|0]||THEMES[0];["--bg","--c","--t","--m","--a","--b"].forEach((k,i)=>t[1]?r.setProperty(k,t[i+1]):r.removeProperty(k));const b=document.body.style;b.backgroundImage=d&&pok(d.bg)?`url("${pub(d.bg)}")`:"";b.backgroundSize="cover";b.backgroundAttachment="fixed"}
+
+/* ---------- вход ---------- */
+function login(){applyTheme({});$("#app").innerHTML=`<div class="card"><h1>Inglish</h1><p class="m">Два кабинета, у каждого свой пароль (не короче 6 символов).</p><div class="row"><input id="ln" placeholder="Имя" autocomplete="username"><input id="lp" type="password" placeholder="Пароль" autocomplete="current-password"></div><div class="row"><button id="go">Войти</button><button class="g" id="reg">Создать кабинет</button></div><div id="le" class="bad"></div></div>`;
+const err=m=>{$("#le").textContent=m};
+$("#go").onclick=async()=>{const n=$("#ln").value.trim(),p=$("#lp").value;if(!n||p.length<6)return err("Имя и пароль от 6 символов");err("Входим...");const{data,error}=await sb.auth.signInWithPassword({email:mail(n),password:p});if(error)return err("Неверное имя или пароль");await start(data.user)};
+$("#reg").onclick=async()=>{const n=$("#ln").value.trim(),p=$("#lp").value;if(!n||p.length<6)return err("Имя и пароль от 6 символов");err("Создаём...");const{data,error}=await sb.auth.signUp({email:mail(n),password:p});if(error)return err(error.message.includes("registered")?"Такое имя уже занято":error.message);if(!data.session)return err("В Supabase включено подтверждение почты: отключите Confirm email");
+const{error:e2}=await sb.from("profiles").insert({id:data.user.id,name:n,data:{}});if(e2)return err(e2.code==="23505"?"Такое имя уже занято":e2.message);await start(data.user)}}
+async function start(u){ME=u;const{data}=await sb.from("profiles").select("name,data").eq("id",u.id).maybeSingle();if(!data){await sb.auth.signOut();login();return}
+U=data.name;D=data.data||{};D.plan=D.plan||{m:"comm",start:today(),pw:3,dl:"",done:[]};D.dict=D.dict||[];D.fav=D.fav||[];D.media=D.media||[];main()}
+function main(){$("#app").innerHTML=`<div class="card row">${av(D,40)}<h1 style="flex:1;margin:0">Кабинет: ${esc(U)}</h1><button class="g" id="lo">Выйти</button></div><div class="row tabs">${TABS.map(t=>`<button id="${t[0]}">${t[1]}</button>`).join("")}</div><div id="v"></div>`;
+applyTheme(D);$("#lo").onclick=async()=>{await sb.auth.signOut();ME=null;U="";D={};login()};
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>go(b.id));go("t1")}
+function go(id){document.querySelectorAll(".tabs button").forEach(x=>x.className=x.id===id?"on":"");({t1:text,t2:plan,t3:dict,t4:favs,t5:ptn,t6:prof,t7:cards,t8:net})[id]()}
+
+/* ---------- текст ---------- */
+function text(){$("#v").innerHTML=`<div class="card"><h2>Мой текст</h2><textarea id="in" placeholder="Вставьте английский текст">${esc(D.text||"")}</textarea><div class="row"><button id="show">Показать для разбора</button></div></div>
+<div class="card" id="bar"><div class="row"><span class="m">Акцент:</span><select id="acc">${ACC.map(a=>`<option value="${a[0]}">${a[1]} (${a[0]})</option>`).join("")}</select><button id="sp">🔊 Озвучить</button><button id="tr">Перевод + грамматика</button><button id="pr">🎤 Произношение</button><a id="gt" target="_blank" rel="noopener" class="m">Google Translate</a></div><div class="m">Выделите слово или предложение в тексте ниже.</div><div id="out"></div></div>
+<div class="card"><div id="txt" class="m">Здесь появится текст.</div></div><div id="mw"></div>`;
+$("#acc").value=D.acc||"en-US";$("#acc").onchange=()=>{D.acc=$("#acc").value;sv()};
+const render=()=>{D.text=$("#in").value;sv();$("#txt").textContent=D.text||"Пусто";$("#txt").className=""};$("#show").onclick=render;if(D.text)render();
+["#sp","#tr","#pr"].forEach(i=>$(i).onmousedown=e=>e.preventDefault());
+const out=m=>{$("#out").textContent=m};
+$("#sp").onclick=()=>{if(!PSEL)return out("Сначала выделите текст");if(!say(PSEL))out("В этом браузере нет озвучки: откройте сайт в Chrome или Safari.")};
+$("#tr").onclick=async()=>{const s=PSEL;if(!s)return out("Сначала выделите текст");out("Думаю...");try{out(await ai(`Ты преподаватель английского для русскоязычного. Фрагмент: «${s}». Ответь по-русски, кратко, без markdown: 1) Перевод. 2) Грамматика: конструкция, время, роль слов. 3) Произношение: транскрипция IPA для акцента ${D.acc||"en-US"} и на что обратить внимание.`))}catch(e){out("Ошибка: "+e.message)}};
+$("#pr").onclick=()=>{const t=PSEL,R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!t)return out("Сначала выделите фразу");if(!R)return out("Распознавание речи не поддерживается в этом браузере (попробуйте Chrome).");
+const r=new R();r.lang=D.acc||"en-US";r.interimResults=false;r.maxAlternatives=1;out("Говорите: «"+t+"»");
+r.onresult=e=>{const h=e.results[0][0].transcript,n=s=>s.toLowerCase().replace(/[^a-z0-9' ]/g,"").split(/\s+/).filter(Boolean),a=n(t),g=n(h),miss=a.filter(w=>!g.includes(w));if(!a.length)return out("Выделите текст на английском");$("#out").innerHTML=`Услышал: ${esc(h)}<br>Совпало ${a.length-miss.length} из ${a.length} слов (${Math.round(100*(a.length-miss.length)/a.length)}%)${miss.length?`<br><span class="bad">Не распознано: ${esc(miss.join(", "))}</span>`:'<br><span class="ok">Отлично!</span>'}`};
+r.onerror=e=>out(e.error==="not-allowed"||e.error==="service-not-allowed"?"Нет доступа к микрофону: разрешите его для сайта в настройках браузера.":"Ошибка распознавания: "+e.error);
+try{r.start()}catch(x){out("Не удалось запустить: "+x.message)}};
+media()}
+function media(){const w=$("#mw");if(!w)return;D.media=D.media||[];const ms=D.media.filter(x=>pok(x.p));
+w.innerHTML=`<div class="card"><h2>Картинки и видео</h2><input id="mf" type="file" accept="image/*,video/*"><div id="mm" class="m"></div>${ms.map((x,i)=>`<div style="margin:8px 0">${x.t==="v"?`<video controls playsinline style="max-width:100%" src="${esc(pub(x.p))}"></video>`:`<img style="max-width:100%;border-radius:8px" src="${esc(pub(x.p))}" alt="">`}<div><button class="g" data-md="${i}">Удалить</button></div></div>`).join("")}</div>`;
+$("#mf").onchange=async e=>{const f=e.target.files[0];if(!f)return;$("#mm").textContent="Загружаю...";try{const p=await up(f);D.media.push({p,t:f.type.startsWith("video")?"v":"i"});sv();media()}catch(x){$("#mm").textContent="Не удалось загрузить: "+x.message}};
+document.querySelectorAll("[data-md]").forEach(b=>b.onclick=async()=>{const x=ms[+b.dataset.md];try{await sb.storage.from("media").remove([x.p])}catch{}D.media=D.media.filter(y=>y!==x);sv();media()})}
+
+/* ---------- план ---------- */
+const avail=()=>Object.keys(METHODS).filter(k=>k!=="kgb"||(!isL()&&D.kok));
+function plan(){const p=D.plan,ks=avail();if(!ks.includes(p.m)){p.m=ks[0];p.done=[];sv()}const m=METHODS[p.m],n=m.s.length,done=p.done.length,left=n-done;
+const fin=new Date(p.start);fin.setDate(fin.getDate()+Math.ceil(n/p.pw)*7);
+let ver="";if(p.dl){const dl=new Date(p.dl),now=new Date(),f2=new Date(Math.max(now,new Date(p.start)));f2.setDate(f2.getDate()+Math.ceil(left/p.pw)*7);ver=f2<=dl?`<span class="ok">Успеваете: финиш ~${f2.toISOString().slice(0,10)} до срока ${p.dl}</span>`:`<span class="bad">Не успеваете: финиш ~${f2.toISOString().slice(0,10)}, срок ${p.dl}. Нужно ${Math.ceil(left/Math.max(1,Math.ceil((dl-now)/6048e5)))} ур./нед.</span>`}
+$("#v").innerHTML=`<div class="card"><h2>Методика</h2><select id="pm">${ks.map(k=>`<option value="${k}">${METHODS[k].n}</option>`).join("")}</select>
+${!isL()&&!D.kok?`<div class="row"><input id="kp" type="password" placeholder="Пароль закрытого курса"><button id="ku">Открыть</button><span id="ke" class="bad"></span></div>`:""}
+<div class="row"><label class="m">Старт <input id="ps" type="date" value="${p.start}"></label><label class="m">Уроков в неделю <input id="pw" type="number" min="1" max="14" value="${p.pw}" style="width:70px"></label><label class="m">Срок <input id="pd" type="date" value="${p.dl}"></label></div>
+<p class="m">${DESC[p.m]}</p><p>Выполнено ${done} из ${n}. Полный курс закончится ~${fin.toISOString().slice(0,10)}.</p><p>${ver}</p></div>
+<div class="card"><h2>Программа</h2><ol style="padding-left:0;list-style:none">${m.s.map((x,i)=>`<li><label><input type="checkbox" data-i="${i}" ${p.done.includes(i)?"checked":""}> ${i+1}. ${x}</label> <button class="g" data-d="${i}">Углубить</button></li>`).join("")}</ol></div><div id="msg" class="m"></div><div class="card" id="deep" style="display:none;white-space:pre-wrap"></div>`;
+$("#pm").value=p.m;$("#pm").onchange=e=>{p.m=e.target.value;p.done=[];sv();plan()};
+$("#ps").onchange=e=>{p.start=e.target.value;sv();plan()};$("#pw").onchange=e=>{p.pw=Math.max(1,+e.target.value||1);sv();plan()};$("#pd").onchange=e=>{p.dl=e.target.value;sv();plan()};
+document.querySelectorAll("[data-i]").forEach(c=>c.onchange=()=>{const i=+c.dataset.i,w=c.checked&&!p.done.includes(i);p.done=c.checked?[...new Set([...p.done,i])]:p.done.filter(x=>x!==i);sv();plan();if(w)addVocab(i)});
+if($("#ku"))$("#ku").onclick=async()=>{if(await hash($("#kp").value)===KH){D.kok=true;sv();plan()}else $("#ke").textContent="Неверный пароль"};
+document.querySelectorAll("[data-d]").forEach(b=>b.onclick=async()=>{const t=m.s[+b.dataset.d],o=$("#deep");o.style.display="block";o.textContent="Готовлю урок...";
+try{o.textContent=await ai(`Методика: «${m.n}». Шаг: «${t}». Составь подробный урок для русскоязычных учеников; цель — речь и произношение как у носителей (акцент ${D.acc||"en-US"}). Без markdown, по-русски: 1) Цель и теория. 2) 12 примеров с переводом. 3) Произношение: IPA, ударение, связывание, редукция, типичные ошибки русскоговорящих. 4) 8 упражнений с ответами. 5) Практика на 15 минут. 6) Как проверить себя.`)}catch(e){o.textContent="Ошибка: "+e.message}o.scrollIntoView()})}
+async function addVocab(i){const t=METHODS[D.plan.m].s[i],o=()=>$("#msg");if(o())o().textContent="Добавляю слова в словарь...";
+try{const r=await ai(`Тема урока английского: «${t}». Дай 10 полезных слов или выражений по теме. Ответь только JSON-массивом объектов {"w":слово,"ru":перевод,"ipa":транскрипция IPA}.`,true);let n=0;r.forEach(x=>{if(x&&x.w&&!D.dict.some(y=>y.w===x.w)){D.dict.push({w:String(x.w),ru:String(x.ru||""),ipa:String(x.ipa||""),t});n++}});sv();if(o())o().textContent="В словарь добавлено слов: "+n}catch(e){if(o())o().textContent="Слова не добавлены: "+e.message}}
+
+/* ---------- словарь, мои слова, карточки ---------- */
+function dict(){$("#v").innerHTML=`<div class="card"><h2>Словарь (${D.dict.length})</h2><p class="m">Слова появляются, когда вы отмечаете тему пройденной.</p>${D.dict.map((x,i)=>`<div class="row"><b>${esc(x.w)}</b><span class="m">${esc(x.ipa)} · ${esc(x.ru)}</span><button class="g" data-s="${i}">🔊</button></div>`).join("")||"<p class=m>Пока пусто</p>"}</div>`;document.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>say(D.dict[b.dataset.s].w))}
+function favs(){$("#v").innerHTML=`<div class="card"><h2>Любимые слова и идиомы</h2><div class="row"><select id="ft"><option>Слово</option><option>Идиома</option></select><input id="fw" placeholder="English"><input id="fr" placeholder="Значение / перевод"><button id="fa">Добавить</button></div></div><div class="card">${D.fav.map((x,i)=>`<div class="row"><span class="m">${esc(x.t)}</span><b>${esc(x.w)}</b><span class="m">${esc(x.r)}</span><button class="g" data-s="${i}">🔊</button><button class="g" data-x="${i}">✕</button></div>`).join("")||"<p class=m>Пока пусто</p>"}</div>`;
+$("#fa").onclick=()=>{const w=$("#fw").value.trim();if(!w)return;D.fav.push({t:$("#ft").value,w,r:$("#fr").value.trim()});sv();favs()};
+document.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>say(D.fav[b.dataset.s].w));document.querySelectorAll("[data-x]").forEach(b=>b.onclick=()=>{D.fav.splice(+b.dataset.x,1);sv();favs()})}
+function cards(){const all=[...D.dict,...D.fav],q=all.filter(x=>!x.due||x.due<=today());
+const draw=()=>{const x=q[0];if(!x){const nx=all.map(y=>y.due).filter(y=>y&&y>today()).sort()[0];$("#v").innerHTML=`<div class="card"><h2>Карточки</h2><p>${all.length?"На сегодня всё повторено. Следующая карточка: "+(nx||"—"):"Пока нет слов. Они появятся, когда вы отметите тему пройденной или добавите свои."}</p></div>`;return}
+$("#v").innerHTML=`<div class="card"><h2>Карточки: осталось ${q.length}</h2><div style="font-size:28px;text-align:center;margin:16px 0">${esc(x.w)}</div><div class="row" style="justify-content:center"><button class="g" id="ks">🔊</button><button id="kr">Показать ответ</button></div><div id="ka" style="text-align:center"></div></div>`;
+$("#ks").onclick=()=>say(x.w);
+$("#kr").onclick=()=>{$("#ka").innerHTML=`<p>${esc(x.ipa||"")}<br><b>${esc(x.ru||x.r||"")}</b></p><div class="row" style="justify-content:center"><button class="g" id="kn">Не помню</button><button id="ky">Помню</button></div>`;$("#kn").onclick=()=>{x.st=0;x.due=today();sv();q.push(q.shift());draw()};$("#ky").onclick=()=>{x.st=Math.min((x.st|0)+1,5);x.due=addD(INT[x.st-1]);sv();q.shift();draw()}}};draw()}
+
+/* ---------- партнёр и профиль ---------- */
+async function ptn(){$("#v").innerHTML='<div class="card m">Загрузка...</div>';const{data,error}=await sb.rpc("partner_view");if($("#t5").className!=="on")return;
+if(error){$("#v").innerHTML='<div class="card bad">Не удалось загрузить: '+esc(error.message)+'</div>';return}
+$("#v").innerHTML=(data||[]).map(r=>{const o=r.data||{},p=o.plan,m=p&&METHODS[p.m],hide=o.hidden||!m,dn=hide?[]:(p.done||[]).filter(i=>m.s[i]);
+return `<div class="card"><div class="row">${av(o,40)}<h2 style="margin:0">${esc(r.name)}</h2></div>${hide?'<p class="m">Пока нет открытых тем.</p>':`<p class="m">${esc(m.n)}: ${dn.length} из ${m.s.length}</p><ul>${dn.map(i=>`<li>${esc(m.s[i])}</li>`).join("")}</ul><p class="m">Слов в словаре: ${(o.dict||[]).length}</p>`}</div>`}).join("")||'<div class="card m">Партнёр ещё не зарегистрирован.</div>'}
+function prof(){$("#v").innerHTML=`<div class="card"><h2>Аватар</h2><div class="row">${av(D,48)}${EM.map(e=>`<button class="g" data-e="${e}">${e}</button>`).join("")}</div><div class="row"><label class="m">Своё фото <input id="af" type="file" accept="image/*"></label></div></div>
+<div class="card"><h2>Тема оформления</h2><div class="row">${THEMES.map((t,i)=>`<button class="${((D.th|0)===i)?"":"g"}" data-t="${i}">${t[0]}</button>`).join("")}</div><div class="row"><label class="m">Картинка вместо фона <input id="bf" type="file" accept="image/*"></label><button class="g" id="bx">Убрать фон</button></div><div id="pg" class="m"></div></div>
+<div class="card"><h2>Ключ ИИ (Gemini)</h2><p class="m">Нужен для перевода, грамматики, уроков «Углубить» и слов в словарь. Бесплатный ключ: aistudio.google.com/apikey. Хранится только в вашем кабинете.</p><div class="row"><input id="kk" type="password" placeholder="Ключ" value="${esc(D.k||"")}"><button id="ks2">Сохранить</button></div></div>`;
+document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{D.av={e:b.dataset.e};sv();main();go("t6")});
+document.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{D.th=+b.dataset.t;sv();applyTheme(D);prof()});
+const upl=(id,fn)=>{$(id).onchange=async e=>{const f=e.target.files[0];if(!f)return;$("#pg").textContent="Загружаю...";try{fn(await up(f));sv();main();go("t6")}catch(x){$("#pg").textContent="Не удалось загрузить: "+x.message}}};
+upl("#af",p=>{D.av={p}});upl("#bf",p=>{D.bg=p});
+$("#bx").onclick=()=>{D.bg="";sv();applyTheme(D)};
+$("#ks2").onclick=()=>{D.k=$("#kk").value.trim();sv();$("#ks2").textContent="Сохранено"}}
+
+let NETRAF=0;
+function edgesFor(k){const m=METHODS[k],n=m.s.length,c=(D.links||{})[k];if(Array.isArray(c)&&c.length)return c;const E=[];for(let i=0;i<n-1;i++){E.push([i,i+1]);if(i%3===0&&i+3<n)E.push([i,i+3]);if(i%4===1&&i+2<n)E.push([i,i+2])}return E}
+function net(){cancelAnimationFrame(NETRAF);const p=D.plan,k=p.m,m=METHODS[k],n=m.s.length,E=edgesFor(k),done=new Set(p.done);
+const pre=i=>E.filter(e=>e[1]===i).map(e=>e[0]);
+const nxt=new Set();for(let i=0;i<n;i++)if(!done.has(i)&&pre(i).every(j=>done.has(j)))nxt.add(i);
+$("#v").innerHTML=`<div class="card"><h2>Нейронные связи: ${esc(m.n)}</h2><canvas id="cv" style="width:100%;height:60vh;border-radius:10px;background:#0b1020;touch-action:none;display:block"></canvas><p class="m"><span style="color:#ffcf40">●</span> пройдено &nbsp;<span style="color:#7fd1ff">●</span> можно изучать сейчас &nbsp;<span style="color:#5b6b8c">●</span> пока закрыто. Вращайте пальцем, нажмите на точку, чтобы увидеть тему.</p><div id="ni" class="m"></div><div class="row"><button class="g" id="nb">Построить связи с помощью ИИ</button></div></div>`;
+const P=[];for(let i=0;i<n;i++){const a=i*.9,r=1+.3*((i%3)-1),y=n>1?(i/(n-1)-.5)*2.4:0;P.push([Math.cos(a)*r,y,Math.sin(a)*r])}
+let ry=0,rx=.35,drag=null,sel=-1;const cv=$("#cv"),ctx=cv.getContext("2d");
+const fit=()=>{const d=devicePixelRatio||1;cv.width=cv.clientWidth*d;cv.height=cv.clientHeight*d;ctx.setTransform(d,0,0,d,0,0)};fit();
+const proj=q=>{const[x,y,z]=q,cy=Math.cos(ry),sy=Math.sin(ry),x1=x*cy+z*sy,z1=-x*sy+z*cy,cx=Math.cos(rx),sx=Math.sin(rx),y2=y*cx-z1*sx,z2=y*sx+z1*cx,W=cv.clientWidth,H=cv.clientHeight,s=Math.min(W,H)*.68/(3-z2);return[W/2+x1*s,H/2+y2*s,z2]};
+const draw=t=>{if(!cv.isConnected)return;const W=cv.clientWidth,H=cv.clientHeight;ctx.clearRect(0,0,W,H);if(!drag)ry+=.004;const Q=P.map(proj);
+ctx.lineWidth=1.2;E.forEach(([a,b])=>{if(!Q[a]||!Q[b])return;const lit=done.has(a)&&done.has(b);ctx.strokeStyle=lit?"rgba(255,207,64,.85)":done.has(a)?"rgba(127,209,255,.55)":"rgba(91,107,140,.35)";ctx.shadowColor=lit?"#ffcf40":"transparent";ctx.shadowBlur=lit?8:0;ctx.beginPath();ctx.moveTo(Q[a][0],Q[a][1]);ctx.lineTo(Q[b][0],Q[b][1]);ctx.stroke()});ctx.shadowBlur=0;
+[...Q.keys()].sort((a,b)=>Q[a][2]-Q[b][2]).forEach(i=>{const[x,y,z]=Q[i],d=done.has(i),nx=nxt.has(i),c=d?"#ffcf40":nx?"#7fd1ff":"#5b6b8c",r=(d?7+1.5*Math.sin(t/300+i):nx?6:4.5)*(1+z*.15);ctx.fillStyle=c;ctx.shadowColor=c;ctx.shadowBlur=d?22:nx?14:0;ctx.beginPath();ctx.arc(x,y,Math.max(2,r),0,7);ctx.fill();ctx.shadowBlur=0;if(i===sel){ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,r+5,0,7);ctx.stroke();ctx.lineWidth=1.2}ctx.fillStyle="rgba(255,255,255,.75)";ctx.font="11px system-ui";ctx.fillText(i+1,x+r+3,y+4)});
+NETRAF=requestAnimationFrame(draw)};NETRAF=requestAnimationFrame(draw);
+cv.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,m:false};cv.setPointerCapture(e.pointerId)};
+cv.onpointermove=e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>3)drag.m=true;ry+=dx*.01;rx=Math.max(-1.2,Math.min(1.2,rx+dy*.01));drag.x=e.clientX;drag.y=e.clientY};
+cv.onpointerup=e=>{if(drag&&!drag.m){const r=cv.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top;let b=-1,bd=1600;P.map(proj).forEach((q,i)=>{const d=(q[0]-px)**2+(q[1]-py)**2;if(d<bd){bd=d;b=i}});sel=b;
+$("#ni").innerHTML=b<0?"":`<b>${b+1}. ${esc(m.s[b])}</b><br>${done.has(b)?"Пройдено.":nxt.has(b)?"Можно изучать сейчас.":"Сначала пройдите: "+pre(b).filter(j=>!done.has(j)).map(j=>j+1).join(", ")}${E.some(e=>e[0]===b)?"<br>Ведёт к: "+E.filter(e=>e[0]===b).map(e=>e[1]+1).join(", "):""}`}drag=null};
+cv.onpointercancel=()=>{drag=null};
+$("#nb").onclick=async()=>{const b=$("#nb");b.textContent="Строю...";try{const r=await ai(`Курс английского «${m.n}». Шаги нумерованы с 0 до ${n-1}:\n${m.s.map((x,i)=>i+": "+x).join("\n")}\nПострой граф зависимостей: что от чего зависит и что к чему ведёт. Верни только JSON-массив пар [от,к], где от<к, примерно от ${Math.round(n*1.5)} до ${n*2} пар; у каждого шага кроме 0 должна быть хотя бы одна входящая связь.`,true);if(!Array.isArray(r))throw new Error("ИИ вернул неверный ответ");const ok=r.filter(e=>Array.isArray(e)&&Number.isInteger(e[0])&&Number.isInteger(e[1])&&e[0]<e[1]&&e[0]>=0&&e[1]<n);if(!ok.length)throw new Error("связи не получены");D.links=D.links||{};D.links[k]=ok;sv();net()}catch(e){b.textContent="Ошибка: "+e.message}}}
+
+sb.auth.getSession().then(({data})=>data.session?start(data.session.user):login());
+</script></body></html>
